@@ -24,7 +24,7 @@ import Data.List (isPrefixOf)
 type STag = Tag String
 
 -- | Parse BLAST results in XML format
-readXML :: FilePath -> IO [BlastResult]
+readXML :: FilePath -> IO BlastResult
 readXML fp = do 
     fc <- readFile fp
     when (not $ isPrefixOf "<?xml" fc) 
@@ -32,7 +32,7 @@ readXML fp = do
                       ++fp++"' does not look like an XML file - aborting!")
     let ts = parseTags fc
         (h:iters) = breaks (\t -> isTagOpenName "Iteration" t || isTagOpenName "Hit" t) ts
-    return [xml2br h iters]
+    return $ xml2br h iters
 
 -- | breaks p = groupBy (const (not.p))
 breaks :: (a -> Bool) -> [a] -> [[a]]
