@@ -94,6 +94,8 @@ hsp2match ms = BlastMatch
                , h_from = read $ get "Hsp_hit-from"
                , h_to   = read $ get "Hsp_hit-to"
                , identity = (read $ get "Hsp_identity", read $ get "Hsp_align-len")
+               , qseq = B.pack $ get "Hsp_qseq"
+               , hseq = B.pack $ get "Hsp_hseq"
                -- blastx has query-frame ±1..3 
                -- tblastn has hit-frame
                -- blastn has both hit and query

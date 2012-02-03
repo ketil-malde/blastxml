@@ -56,5 +56,6 @@ data BlastHit = BlastHit { subject :: !SeqId, slength :: !Int
 data BlastMatch = BlastMatch { bits :: !Double, e_val :: !Double
                              , identity :: (Int,Int)
                              , q_from, q_to, h_from, h_to :: !Int
+                             , qseq, hseq :: !ByteString
                              , aux :: !Aux } deriving Show
 
