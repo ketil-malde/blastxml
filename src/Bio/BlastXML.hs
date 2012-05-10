@@ -1,3 +1,5 @@
+{-# Language OverloadedStrings #-}
+
 {- | Parse blast XML output.
 
    If you use a recent version of NCBI BLAST and specify XML output (blastall -m 7),
@@ -19,15 +21,14 @@ import qualified Data.ByteString.Lazy.Char8 as B
 import Text.HTML.TagSoup
 import Control.Monad
 import Control.Parallel
-import Data.List (isPrefixOf)
 
-type STag = Tag String
+type STag = Tag B.ByteString
 
 -- | Parse BLAST results in XML format
 readXML :: FilePath -> IO BlastResult
 readXML fp = do 
-    fc <- readFile fp
-    when (not $ isPrefixOf "<?xml" fc) 
+    fc <- B.readFile fp
+    when (not $ B.isPrefixOf "<?xml" fc) 
              $ error ("Bio.Sequence.BlastXML.readXML:\n   The file '"
                       ++fp++"' does not look like an XML file - aborting!")
     let ts = parseTags fc
@@ -41,7 +42,7 @@ breaks p (x:xs) = let first = x : takeWhile (not.p) xs
                   in  rest `par` first : if null rest then [] else breaks p rest
 breaks _ []     = []
 
-getFrom :: [STag] -> String -> String
+getFrom :: [STag] -> B.ByteString -> B.ByteString
 getFrom list tag = let xs = sections (isTagOpenName tag) list 
                    in if null xs || null (head xs) || (null . drop 1 . head) xs 
                       then error ("Couldn't find tag '"++show tag++"' in\n"++showSome list)
@@ -65,37 +66,46 @@ xml2br h is = BlastResult { blastprogram = get "BlastOutput_program"
                           , results = map iter2rec $ breaks (isTagOpenName "Iteration" . head) is
                           }
     where (bv,bd) = B.break (=='[') $ get "BlastOutput_version"
-          get = B.pack . getFrom h
+          get = getFrom h
 
 iter2rec :: [[STag]] -> BlastRecord
 iter2rec (i:hs) = BlastRecord 
-              { query = B.pack $ get "Iteration_query-def"
-              , qlength = read $ get "Iteration_query-len"
+              { query = get "Iteration_query-def"
+              , qlength = readI $ get "Iteration_query-len"
               , hits = map hit2hit hs
               }
     where get = getFrom i
+
 iter2rec [] = error "iter2rec: got empty list of sections!"
 
 hit2hit :: [STag] -> BlastHit
 hit2hit hs = BlastHit 
-             { subject = B.pack $ get "Hit_def"
-             , slength = read $ get "Hit_len"
+             { subject = get "Hit_def"
+             , slength = readI $ get "Hit_len"
              , matches = map hsp2match $ partitions (isTagOpenName "Hsp") hs
              }
     where get = getFrom hs
 
 
+readI :: B.ByteString -> Int
+readI x = case B.readInt x of 
+  Just (n,_) -> n
+  _ -> error ("Couldn't read an Int from string: '"++B.unpack x++"'")
+
+readF :: B.ByteString -> Double
+readF = read . B.unpack
+
 hsp2match :: [STag] -> BlastMatch
 hsp2match ms = BlastMatch
-               { bits   = read $ get "Hsp_bit-score"
-               , e_val  = read $ get "Hsp_evalue"
-               , q_from = read $ get "Hsp_query-from"
-               , q_to   = read $ get "Hsp_query-to"
-               , h_from = read $ get "Hsp_hit-from"
-               , h_to   = read $ get "Hsp_hit-to"
-               , identity = (read $ get "Hsp_identity", read $ get "Hsp_align-len")
-               , qseq = B.pack $ get "Hsp_qseq"
-               , hseq = B.pack $ get "Hsp_hseq"
+               { bits   = readF $ get "Hsp_bit-score"
+               , e_val  = readF $ get "Hsp_evalue"
+               , q_from = readI $ get "Hsp_query-from"
+               , q_to   = readI $ get "Hsp_query-to"
+               , h_from = readI $ get "Hsp_hit-from"
+               , h_to   = readI $ get "Hsp_hit-to"
+               , identity = (readI $ get "Hsp_identity", readI $ get "Hsp_align-len")
+               , qseq = get "Hsp_qseq"
+               , hseq = get "Hsp_hseq"
                -- blastx has query-frame ±1..3 
                -- tblastn has hit-frame
                -- blastn has both hit and query
@@ -109,8 +119,8 @@ hsp2match ms = BlastMatch
                          e -> error ("hsp2match: failed to determine frame:\n"++show e)
                }
     where get = getFrom ms
-          mkFrame f = Frame (strand' $ signum $ read f) (abs $ read f)
-          mkStrands h q = Strands (strand' $ read h) (strand' $ read q)
+          mkFrame f = Frame (strand' $ signum $ readI f) (abs $ readI f)
+          mkStrands h q = Strands (strand' $ readI h) (strand' $ readI q)
           -- ignore frame also for tblastx hits (it can be reconstructed from location)
           strand' :: Int -> Strand
           strand' s = if s > 0 then Plus else Minus
