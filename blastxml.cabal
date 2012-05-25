@@ -10,7 +10,7 @@ Maintainer:          ketil@malde.org
 Stability:           Experimental
 Category:            Bioinformatics
 Build-type:          Simple
-Cabal-version:       >=1.2
+Cabal-version:       >=1.6
 
 Source-Repository this
    Type:      darcs
