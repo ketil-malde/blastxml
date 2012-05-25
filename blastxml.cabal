@@ -12,6 +12,11 @@ Category:            Bioinformatics
 Build-type:          Simple
 Cabal-version:       >=1.2
 
+Source-Repository this
+   Type:      darcs
+   Location:  http://malde.org/~ketil/biohaskell/blastxml
+   Tag:       0.2
+
 Library
   Exposed-modules: Bio.BlastXML
   Other-modules:   Bio.BlastData
