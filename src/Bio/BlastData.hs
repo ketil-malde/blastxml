@@ -17,16 +17,9 @@
 module Bio.BlastData where
 
 import Data.ByteString.Lazy.Char8 (ByteString)
+import Bio.Core
 
 -- ------------------------------------------------------------
-
--- | The sequence id, i.e. the first word of the header field.
-type SeqId = ByteString
-
--- | The 'Strand' indicates the direction of the match, i.e. the plain sequence or
---   its reverse complement.
-data Strand = Plus | Minus deriving (Read,Show,Eq)
-
 -- | The Aux field in the BLAST output includes match information that depends
 --   on the BLAST flavor (blastn, blastx, or blastp).  This data structure captures
 --   those variations.
@@ -44,12 +37,12 @@ data BlastResult = BlastResult
                    deriving Show
 
 -- | Each query sequence generates a 'BlastRecord'
-data BlastRecord = BlastRecord { query :: !SeqId, qlength :: !Int
+data BlastRecord = BlastRecord { query :: !SeqLabel, qlength :: !Int
                                , hits :: [BlastHit] } deriving Show
 
 -- | Each match between a query and a target sequence (or subject)
 --   is a 'BlastHit'.
-data BlastHit = BlastHit { subject :: !SeqId, slength :: !Int 
+data BlastHit = BlastHit { subject :: !SeqLabel, slength :: !Int 
                          , matches :: [BlastMatch] } deriving Show
 -- | A 'BlastHit' may contain multiple separate matches (typcially when
 --   an indel causes a frameshift that blastx is unable to bridge).

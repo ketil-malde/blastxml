@@ -16,6 +16,7 @@ module Bio.BlastXML ( readXML
                     , module Bio.BlastData) where
 
 import Bio.BlastData
+import Bio.Core
 
 import qualified Data.ByteString.Lazy.Char8 as B
 import Text.HTML.TagSoup
@@ -70,7 +71,7 @@ xml2br h is = BlastResult { blastprogram = get "BlastOutput_program"
 
 iter2rec :: [[STag]] -> BlastRecord
 iter2rec (i:hs) = BlastRecord 
-              { query = get "Iteration_query-def"
+              { query = SeqLabel $ get "Iteration_query-def"
               , qlength = readI $ get "Iteration_query-len"
               , hits = map hit2hit hs
               }
@@ -80,7 +81,7 @@ iter2rec [] = error "iter2rec: got empty list of sections!"
 
 hit2hit :: [STag] -> BlastHit
 hit2hit hs = BlastHit 
-             { subject = get "Hit_def"
+             { subject = SeqLabel $ get "Hit_def"
              , slength = readI $ get "Hit_len"
              , matches = map hsp2match $ partitions (isTagOpenName "Hsp") hs
              }
@@ -124,5 +125,3 @@ hsp2match ms = BlastMatch
           -- ignore frame also for tblastx hits (it can be reconstructed from location)
           strand' :: Int -> Strand
           strand' s = if s > 0 then Plus else Minus
-
-
