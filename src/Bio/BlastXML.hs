@@ -13,6 +13,7 @@
 -}
 
 module Bio.BlastXML ( readXML
+                    , parseXML
                     , module Bio.BlastData) where
 
 import Bio.BlastData
@@ -33,6 +34,14 @@ readXML fp = do
              $ error ("Bio.Sequence.BlastXML.readXML:\n   The file '"
                       ++fp++"' does not look like an XML file - aborting!")
     let ts = parseTags fc
+        (h:iters) = breaks (\t -> isTagOpenName "Iteration" t || isTagOpenName "Hit" t) ts
+    return $ xml2br h iters
+
+parseXML :: B.ByteString -> IO BlastResult
+parseXML xmlString = do    
+    when (not $ B.isPrefixOf "<?xml" xmlString) 
+             $ error ("Bio.Sequence.BlastXML.readXML:\n The input does not look to be XML format - aborting!")
+    let ts = parseTags xmlString
         (h:iters) = breaks (\t -> isTagOpenName "Iteration" t || isTagOpenName "Hit" t) ts
     return $ xml2br h iters
 
