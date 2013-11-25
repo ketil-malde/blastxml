@@ -1,5 +1,5 @@
 Name:                blastxml
-Version:             0.3
+Version:             0.3.1
 Synopsis:            Library for reading Blast XML output
 Description:         This library contains a data structure and functions for 
 		     reading output from the BLAST sequence alignment program.
