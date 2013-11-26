@@ -5,6 +5,7 @@ Description:         This library contains a data structure and functions for
 		     reading output from the BLAST sequence alignment program.
 Homepage:            http://biohaskell.org/
 License:             LGPL
+License-file:	     COPYING
 Author:              Ketil Malde
 Maintainer:          ketil@malde.org
 Stability:           Experimental
