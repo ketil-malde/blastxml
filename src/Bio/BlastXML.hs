@@ -90,7 +90,8 @@ iter2rec [] = error "iter2rec: got empty list of sections!"
 
 hit2hit :: [STag] -> BlastHit
 hit2hit hs = BlastHit 
-             { subject = SeqLabel $ get "Hit_def"
+             { hitId = get "Hit_id"
+             , subject = SeqLabel $ get "Hit_def"
              , slength = readI $ get "Hit_len"
              , matches = map hsp2match $ partitions (isTagOpenName "Hsp") hs
              }

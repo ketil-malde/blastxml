@@ -42,8 +42,12 @@ data BlastRecord = BlastRecord { query :: !SeqLabel, qlength :: !Int
 
 -- | Each match between a query and a target sequence (or subject)
 --   is a 'BlastHit'.
-data BlastHit = BlastHit { subject :: !SeqLabel, slength :: !Int 
-                         , matches :: [BlastMatch] } deriving Show
+data BlastHit = BlastHit 
+    { hitId :: !ByteString
+    , subject :: !SeqLabel
+    , slength :: !Int
+    , matches :: [BlastMatch] } deriving Show
+
 -- | A 'BlastHit' may contain multiple separate matches (typcially when
 --   an indel causes a frameshift that blastx is unable to bridge).
 data BlastMatch = BlastMatch { bits :: !Double, e_val :: !Double
